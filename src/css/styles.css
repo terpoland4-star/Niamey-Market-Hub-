@@ -210,3 +210,16 @@ input:focus, select:focus, textarea:focus { border-color: var(--orange); }
 
 @media (max-width: 400px) { .product-grid { gap: 0.75rem; } }
 @media (min-width: 768px) { .container { padding: 1.5rem 2rem; } }
+/* ---------- SUPPORT RTL (ARABE) ---------- */
+[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+[dir="rtl"] .flex { flex-direction: row-reverse; }
+[dir="rtl"] .home-nav a { flex-direction: column; }
+[dir="rtl"] .whatsapp-float { left: 24px; right: auto; flex-direction: row-reverse; }
+[dir="rtl"] .search-wrapper input { text-align: right; }
+[dir="rtl"] .search-wrapper .search-btn { border-radius: 30px 0 0 30px; }
+[dir="rtl"] .promo-left { text-align: right; }
+[dir="rtl"] .promo-right { text-align: left; }
+[dir="rtl"] .toolbar-left, [dir="rtl"] .toolbar-right { flex-direction: row-reverse; }
