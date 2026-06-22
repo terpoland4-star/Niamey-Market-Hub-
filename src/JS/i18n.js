@@ -1,5 +1,6 @@
 // ==========================================
-// i18n.js – Internationalisation corrigée
+// i18n.js – Internationalisation
+// Version 2.1 – Avec clés iOS install ajoutées
 // ==========================================
 
 const I18n = {
@@ -85,6 +86,11 @@ const I18n = {
                 install: 'Installer',
                 later: 'Plus tard',
                 
+                // iOS Install
+                ios_install_step1: 'Appuyez sur le bouton Partager',
+                ios_install_step2: 'Sélectionnez "Sur l\'écran d\'accueil"',
+                ios_install_step3: 'Puis appuyez sur "Ajouter"',
+                
                 // Thème
                 dark_mode: 'Mode sombre',
                 light_mode: 'Mode clair',
@@ -95,7 +101,7 @@ const I18n = {
                 share: 'Partager',
                 share_text: 'Découvrez cette boutique !',
                 
-                // Pluralisation (AJOUTÉ)
+                // Pluralisation
                 product_zero: 'Aucun produit',
                 product_one: '1 produit',
                 product_other: '{count} produits',
@@ -175,6 +181,11 @@ const I18n = {
                 install: 'Install',
                 later: 'Later',
                 
+                // iOS Install
+                ios_install_step1: 'Tap the Share button',
+                ios_install_step2: 'Select "Add to Home Screen"',
+                ios_install_step3: 'Then tap "Add"',
+                
                 // Theme
                 dark_mode: 'Dark mode',
                 light_mode: 'Light mode',
@@ -185,7 +196,7 @@ const I18n = {
                 share: 'Share',
                 share_text: 'Check out this store!',
                 
-                // Pluralization (ADDED)
+                // Pluralization
                 product_zero: 'No products',
                 product_one: '1 product',
                 product_other: '{count} products',
@@ -205,7 +216,7 @@ const I18n = {
     },
 
     /**
-     * Traduction simple (CORRIGÉE - utilise this.translations)
+     * Traduction simple
      */
     t(key) {
         const text = this.translations[this.currentLang]?.[key] || 
@@ -215,7 +226,7 @@ const I18n = {
     },
 
     /**
-     * Traduction avec pluralisation (AJOUTÉE)
+     * Traduction avec pluralisation
      */
     tp(key, count) {
         let pluralKey;
@@ -231,7 +242,7 @@ const I18n = {
     },
 
     /**
-     * Change la langue SANS recharger la page (CORRIGÉ)
+     * Change la langue SANS recharger la page
      */
     setLang(lang) {
         if (this.availableLangs.includes(lang)) {
@@ -251,6 +262,13 @@ const I18n = {
         if (typeof callback === 'function') {
             this.listeners.push(callback);
         }
+    },
+
+    /**
+     * Retire un listener
+     */
+    offChange(callback) {
+        this.listeners = this.listeners.filter(cb => cb !== callback);
     },
 
     /**
