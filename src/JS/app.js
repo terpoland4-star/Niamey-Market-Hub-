@@ -1,6 +1,6 @@
 // ==========================================
 // app.js – Point d'entrée principal
-// Version 2.0 – Robustesse et gestion d'erreur
+// Version 2.1 – Correction initPWA → initInstallBanner
 // ==========================================
 
 (async function() {
@@ -28,10 +28,12 @@
         }
 
         // 3. Initialiser l'API
-        API.init({
-            baseUrl: 'https://api.niameymarkethub.com/v1',
-            timeout: 10000
-        });
+        if (typeof API !== 'undefined' && API.init) {
+            API.init({
+                baseUrl: 'https://api.niameymarkethub.com/v1',
+                timeout: 10000
+            });
+        }
 
         // 4. Charger la configuration de la boutique
         console.log('📡 Chargement de la configuration...');
@@ -77,34 +79,45 @@
             }
         });
 
-        // 10. Installation PWA (si supportée)
-        if (typeof initPWA === 'function') {
+        // 10. Installation PWA (si supportée) – CORRIGÉ ligne 81
+        // Vérifier d'abord initInstallBanner (fonction réelle dans install.js)
+        if (typeof initInstallBanner === 'function') {
+            initInstallBanner();
+        } else if (typeof initPWA === 'function') {
+            // Fallback pour rétrocompatibilité
             initPWA();
         }
 
         // 11. Vérifier la connexion internet
         window.addEventListener('online', () => {
             console.log('🟢 Connexion internet rétablie');
-            showToast('Connexion rétablie', 'success', 2000);
+            if (typeof showToast === 'function') {
+                showToast('Connexion rétablie', 'success', 2000);
+            }
         });
         
         window.addEventListener('offline', () => {
             console.log('🔴 Connexion internet perdue');
-            showToast('Mode hors-ligne', 'info', 3000);
+            if (typeof showToast === 'function') {
+                showToast('Mode hors-ligne', 'info', 3000);
+            }
         });
 
         // 12. Gestion des erreurs globales
         window.addEventListener('error', (event) => {
             console.error('❌ Erreur globale:', event.error);
-            // Ne pas afficher les erreurs de ressources (images, etc.)
             if (event.error && event.error instanceof Error) {
-                showToast('Une erreur est survenue', 'error', 5000);
+                if (typeof showToast === 'function') {
+                    showToast('Une erreur est survenue', 'error', 5000);
+                }
             }
         });
 
         window.addEventListener('unhandledrejection', (event) => {
             console.error('❌ Promesse non gérée:', event.reason);
-            showToast('Erreur inattendue', 'error', 5000);
+            if (typeof showToast === 'function') {
+                showToast('Erreur inattendue', 'error', 5000);
+            }
         });
 
         // 13. Marquer l'app comme prête
@@ -128,11 +141,15 @@
         // Afficher un message d'erreur à l'utilisateur
         const app = document.getElementById('app');
         if (app) {
+            const errorMessage = typeof escapeHtml === 'function' 
+                ? escapeHtml(error.message || 'Erreur inconnue') 
+                : (error.message || 'Erreur inconnue');
+                
             app.innerHTML = `
                 <div class="error-state" style="padding: 40px; text-align: center;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #dc3545;" aria-hidden="true"></i>
                     <h2 style="margin: 20px 0; color: var(--text-primary);">${I18n.t('error_loading')}</h2>
-                    <p style="color: var(--text-secondary); margin-bottom: 20px;">${escapeHtml(error.message || 'Erreur inconnue')}</p>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">${errorMessage}</p>
                     <button onclick="location.reload()" class="btn btn-primary">
                         <i class="fas fa-redo" aria-hidden="true"></i> ${I18n.t('retry')}
                     </button>
