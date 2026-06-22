@@ -1,43 +1,21 @@
 // ==========================================
 // shop-loader.js – Détecte et charge la boutique active
-// Version 2.0 – Sécurisée et scalable
+// Version 2.1 – Compatible GitHub Pages
 // ==========================================
 
 const ShopLoader = {
-    // Cache de la configuration chargée
     cachedConfig: null,
     cacheTimestamp: null,
-    CACHE_TTL: 5 * 60 * 1000, // 5 minutes
+    CACHE_TTL: 5 * 60 * 1000,
 
     /**
      * Détecte le slug de la boutique depuis le domaine
-     * Supporte : sous-domaine, chemin, et domaines personnalisés
      */
     detectShop() {
         const hostname = window.location.hostname;
-        const pathname = window.location.pathname;
         
-        // 1. Détection par sous-domaine (ex: maboutique.niameymarkethub.com)
-        const subdomainMatch = hostname.match(/^([a-z0-9-]+)\.niameymarkethub\.com$/i);
-        if (subdomainMatch && validateShopSlug(subdomainMatch[1])) {
-            return subdomainMatch[1].toLowerCase();
-        }
-        
-        // 2. Détection par chemin (ex: niameymarkethub.com/maboutique)
-        const pathMatch = pathname.match(/^\/([a-z0-9-]+)/);
-        if (pathMatch && validateShopSlug(pathMatch[1]) && pathMatch[1] !== 'admin') {
-            return pathMatch[1].toLowerCase();
-        }
-        
-        // 3. Mapping domaines personnalisés (chargé dynamiquement)
-        const customDomain = this.getCustomDomainMapping(hostname);
-        if (customDomain && validateShopSlug(customDomain)) {
-            return customDomain;
-        }
-        
-        // 4. Mode développement
+        // Mode développement local
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            // Vérifier si un slug est passé en paramètre
             const params = getUrlParams();
             if (params.shop && validateShopSlug(params.shop)) {
                 return params.shop.toLowerCase();
@@ -45,43 +23,17 @@ const ShopLoader = {
             return 'boutique-demo';
         }
         
-        // 5. Fallback
+        // GitHub Pages ou production
         return 'boutique-demo';
     },
 
     /**
-     * Récupère le mapping domaines personnalisés depuis le localStorage
-     * ou une API externe
-     */
-    getCustomDomainMapping(hostname) {
-        // Mapping statique (peut être chargé depuis API)
-        const staticMapping = {
-            'www.maboutique.com': 'ma-boutique',
-            'www.autre-boutique.ne': 'autre-boutique'
-        };
-        
-        // Vérifier le mapping statique
-        if (staticMapping[hostname]) {
-            return staticMapping[hostname];
-        }
-        
-        // Vérifier le mapping dynamique dans localStorage
-        const dynamicMapping = safeLocalStorage('domain_mapping');
-        if (dynamicMapping && dynamicMapping[hostname]) {
-            return dynamicMapping[hostname];
-        }
-        
-        return null;
-    },
-
-    /**
      * Charge la configuration de la boutique
-     * Avec validation, cache, et gestion d'erreur robuste
      */
     async loadShopConfig() {
         const shopSlug = this.detectShop();
         
-        // VALIDATION DE SÉCURITÉ : Empêcher le path traversal
+        // VALIDATION DE SÉCURITÉ
         if (!validateShopSlug(shopSlug)) {
             console.error('❌ Slug boutique invalide:', shopSlug);
             return this.loadFallbackConfig('Slug boutique invalide');
@@ -99,27 +51,20 @@ const ShopLoader = {
         }
         
         try {
-            // Tentative de chargement de la config
             let config;
             
-            // Essayer de charger depuis le fichier local
+            // Essayer de charger le fichier de config
             config = await this.loadFromFile(shopSlug);
             
-            // Essayer de charger depuis l'API si disponible
+            // Si pas trouvé, utiliser la config par défaut intégrée
             if (!config) {
-                config = await this.loadFromAPI(shopSlug);
-            }
-            
-            // Si toujours pas de config, fallback
-            if (!config) {
-                return this.loadFallbackConfig('Configuration introuvable');
+                console.warn('⚠️ Fichier config introuvable, utilisation de la config intégrée');
+                config = this.getDefaultConfig();
             }
             
             // Valider la configuration
-            const validation = this.validateConfig(config);
-            if (!validation.valid) {
-                console.error('❌ Configuration invalide:', validation.errors);
-                return this.loadFallbackConfig('Configuration invalide');
+            if (!config.name) {
+                return this.loadFallbackConfig('Configuration incomplète');
             }
             
             // Appliquer la configuration
@@ -140,129 +85,137 @@ const ShopLoader = {
     },
 
     /**
-     * Charge la config depuis un fichier local
+     * Charge la config depuis un fichier
+     * CORRIGÉ pour GitHub Pages
      */
     async loadFromFile(shopSlug) {
-        try {
-            // Le chemin est sécurisé car le slug a été validé
-            const configModule = await import(`../../shops/${shopSlug}/shop-config.js`);
-            if (configModule && configModule.SHOP_CONFIG) {
-                return configModule.SHOP_CONFIG;
-            }
-        } catch (e) {
-            console.warn('⚠️ Config fichier non trouvée pour:', shopSlug);
+        const pathsToTry = [];
+        
+        // Détecter si on est sur GitHub Pages
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        
+        if (isGitHubPages) {
+            // GitHub Pages : le repo sert de base
+            const repoName = window.location.pathname.split('/')[1] || '';
+            pathsToTry.push(
+                `../shops/${shopSlug}/shop-config.js`,
+                `../../shops/${shopSlug}/shop-config.js`,
+                `/${repoName}/shops/${shopSlug}/shop-config.js`,
+                `/shops/${shopSlug}/shop-config.js`
+            );
+        } else {
+            pathsToTry.push(
+                `../../shops/${shopSlug}/shop-config.js`,
+                `../shops/${shopSlug}/shop-config.js`,
+                `/shops/${shopSlug}/shop-config.js`
+            );
         }
+        
+        for (const path of pathsToTry) {
+            try {
+                console.log('🔄 Tentative chargement:', path);
+                const configModule = await import(path);
+                if (configModule && configModule.SHOP_CONFIG) {
+                    console.log('✅ Config chargée depuis:', path);
+                    return configModule.SHOP_CONFIG;
+                }
+            } catch (e) {
+                console.log('❌ Échec:', path);
+            }
+        }
+        
         return null;
     },
 
     /**
-     * Charge la config depuis l'API
+     * Configuration par défaut intégrée (hardcodée)
+     * Sert de fallback si le fichier est introuvable
      */
-    async loadFromAPI(shopSlug) {
-        try {
-            const response = await API.call(`/shops/${shopSlug}/config`, {
-                useAuth: false,
-                timeout: 5000
-            });
-            return response.data;
-        } catch (e) {
-            console.warn('⚠️ Config API non disponible pour:', shopSlug);
-        }
-        return null;
-    },
-
-    /**
-     * Charge la configuration par défaut (fallback)
-     */
-    async loadFallbackConfig(reason = 'Non spécifié') {
-        console.warn('⚠️ Chargement config fallback. Raison:', reason);
-        
-        try {
-            const defaultModule = await import('./shop-config.js');
-            if (defaultModule && defaultModule.SHOP_CONFIG) {
-                window.SHOP_CONFIG = defaultModule.SHOP_CONFIG;
-                this.applyTheme();
-                return defaultModule.SHOP_CONFIG;
-            }
-        } catch (e) {
-            console.error('❌ Même la config fallback a échoué:', e);
-        }
-        
-        // Config d'urgence minimale
-        const emergencyConfig = {
-            slug: 'emergency',
-            name: 'Niamey Market Hub',
-            tagline: 'Service temporairement indisponible',
-            description: 'Veuillez réessayer plus tard.',
-            logo: 'https://placehold.co/200x200?text=NMH',
-            favicon: 'https://placehold.co/96x96?text=NMH',
+    getDefaultConfig() {
+        return {
+            slug: 'boutique-demo',
+            name: 'Ma Boutique Démo',
+            tagline: 'Votre boutique en ligne de confiance',
+            description: 'Découvrez notre sélection de produits de qualité à Niamey.',
+            logo: 'https://placehold.co/200x200?text=Demo',
+            favicon: 'https://placehold.co/96x96?text=Demo',
             primaryColor: '#E05206',
             secondaryColor: '#1B6B93',
-            whatsapp: '22786762903',
-            whatsappMessage: 'Bonjour',
-            email: 'contact@niameymarkethub.com',
+            whatsapp: '22700000000',
+            whatsappMessage: 'Bonjour, je viens de visiter votre boutique !',
+            email: 'contact@maboutique.com',
             phone: '+227 00 00 00 00',
             address: 'Niamey, Niger',
             googleMaps: '#',
             facebook: '#',
             instagram: '',
             tiktok: '',
-            developerName: 'HAM Global Words',
-            developerTitle: 'Développement Web',
-            developerAddress: 'Niamey, Niger',
+            developerName: 'Hamadine AG MOCTAR',
+            developerTitle: 'Développeur full‑stack & CEO de HAM Global Words',
+            developerAddress: 'Tchangarey, Marché de Bétail, Niamey (Niger)',
             developerWhatsapp: '22786762903',
             developerEmail: 'contact@hamglobalwords.com',
             developerLogo: '',
-            categories: [],
-            products: []
+            categories: [
+                { key: 'electronique', label: 'Électronique' },
+                { key: 'mode', label: 'Mode' },
+                { key: 'maison', label: 'Maison' }
+            ],
+            products: [
+                {
+                    id: 'demo-1',
+                    name: 'Smartphone Pro X',
+                    category: 'electronique',
+                    condition: 'new',
+                    price: 150000,
+                    oldPrice: 180000,
+                    thumbnail: 'https://placehold.co/600x400?text=Smartphone',
+                    description: 'Smartphone dernière génération avec 128Go de stockage.',
+                    rating: 4.5,
+                    stock: 15,
+                    available: true
+                },
+                {
+                    id: 'demo-2',
+                    name: 'Robe traditionnelle',
+                    category: 'mode',
+                    condition: 'new',
+                    price: 25000,
+                    oldPrice: null,
+                    thumbnail: 'https://placehold.co/600x400?text=Robe',
+                    description: 'Magnifique robe en wax authentique.',
+                    rating: 4.8,
+                    stock: 20,
+                    available: true
+                },
+                {
+                    id: 'demo-3',
+                    name: 'Table basse design',
+                    category: 'maison',
+                    condition: 'used',
+                    price: 35000,
+                    oldPrice: 50000,
+                    thumbnail: 'https://placehold.co/600x400?text=Table',
+                    description: 'Table basse en bon état, idéale pour votre salon.',
+                    rating: 4.0,
+                    stock: 1,
+                    available: true
+                }
+            ]
         };
-        
-        window.SHOP_CONFIG = emergencyConfig;
-        this.applyTheme();
-        return emergencyConfig;
     },
 
     /**
-     * Valide la configuration de la boutique
+     * Charge la configuration de fallback
      */
-    validateConfig(config) {
-        const errors = [];
+    async loadFallbackConfig(reason = 'Non spécifié') {
+        console.warn('⚠️ Chargement config fallback. Raison:', reason);
         
-        // Champs requis
-        if (!config.slug || typeof config.slug !== 'string') {
-            errors.push('slug requis');
-        }
-        if (!config.name || typeof config.name !== 'string') {
-            errors.push('name requis');
-        }
-        if (!Array.isArray(config.products)) {
-            errors.push('products doit être un tableau');
-        }
+        const fallbackConfig = this.getDefaultConfig();
+        window.SHOP_CONFIG = fallbackConfig;
+        this.applyTheme();
         
-        // Validation des produits
-        if (config.products && config.products.length > 0) {
-            config.products.forEach((product, index) => {
-                if (!product.id) errors.push(`produit[${index}].id requis`);
-                if (!product.name) errors.push(`produit[${index}].name requis`);
-                if (typeof product.price !== 'number' || product.price < 0) {
-                    errors.push(`produit[${index}].price invalide`);
-                }
-            });
-        }
-        
-        // Validation des couleurs
-        const colorRegex = /^#[0-9A-Fa-f]{6}$/;
-        if (config.primaryColor && !colorRegex.test(config.primaryColor)) {
-            errors.push('primaryColor doit être un hex couleur valide');
-        }
-        if (config.secondaryColor && !colorRegex.test(config.secondaryColor)) {
-            errors.push('secondaryColor doit être un hex couleur valide');
-        }
-        
-        return {
-            valid: errors.length === 0,
-            errors
-        };
+        return fallbackConfig;
     },
 
     /**
@@ -273,26 +226,16 @@ const ShopLoader = {
         
         const config = window.SHOP_CONFIG;
         
-        // Appliquer les couleurs CSS
         document.documentElement.style.setProperty('--orange', config.primaryColor || '#E05206');
         document.documentElement.style.setProperty('--secondary', config.secondaryColor || '#1B6B93');
         
-        // Mettre à jour le favicon
-        if (config.favicon) {
-            const favicon = document.querySelector('link[rel="icon"]');
-            if (favicon) {
-                favicon.href = config.favicon;
-            }
-        }
-        
-        // Mettre à jour le titre
         if (config.name) {
             document.title = config.name;
         }
     },
 
     /**
-     * Recharge la configuration (utile après changement de boutique)
+     * Recharge la configuration
      */
     async reload() {
         this.cachedConfig = null;
@@ -301,7 +244,7 @@ const ShopLoader = {
     }
 };
 
-// Fonction de compatibilité pour le code existant
+// Fonctions de compatibilité
 function detectShop() {
     return ShopLoader.detectShop();
 }
