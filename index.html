@@ -15,6 +15,20 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="manifest" href="manifest.json">
     <title>Niamey Market Hub</title>
+    <style>
+        /* Styles additionnels pour les pages login/register/dashboard */
+        .page { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .page h2 { margin-bottom: 20px; }
+        .page form { display: flex; flex-direction: column; gap: 12px; }
+        .page input, .page select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); }
+        .page button { margin-top: 8px; }
+        .my-products { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+        .my-product-item { display: flex; align-items: center; gap: 12px; background: var(--surface); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+        .my-product-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .my-product-item .info { flex: 1; }
+        .my-product-item .actions { display: flex; gap: 6px; }
+        .btn-danger { background: #dc3545; color: white; }
+    </style>
 </head>
 <body>
     <noscript>
@@ -31,6 +45,12 @@
             <option value="fr">🇫🇷 FR</option>
             <option value="en">🇬🇧 EN</option>
         </select>
+        <nav style="display:flex; gap:10px; margin-left:auto;">
+            <a href="#home" class="toolbar-btn">Accueil</a>
+            <a href="#login" class="toolbar-btn" id="login-link">Connexion</a>
+            <a href="#register" class="toolbar-btn" id="register-link">Inscription</a>
+            <a href="#dashboard" class="toolbar-btn" id="dashboard-link" style="display:none;">Dashboard</a>
+        </nav>
         <div style="display:flex;gap:6px;">
             <button id="theme-btn" class="toolbar-btn"><i class="fas fa-moon"></i></button>
             <button id="contrast-btn" class="toolbar-btn"><i class="fas fa-adjust"></i></button>
@@ -51,21 +71,7 @@
         </a>
     </div>
 
-    <div class="modal-overlay" id="product-modal" style="display:none;">
-        <div class="modal">
-            <button class="modal-close" id="modal-close">&times;</button>
-            <div id="modal-content"></div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="cart-modal" style="display:none;">
-        <div class="modal">
-            <button class="modal-close" id="cart-modal-close">&times;</button>
-            <div id="cart-modal-content"></div>
-        </div>
-    </div>
-    <div id="toast-container"></div>
-
-    <!-- ========== DEBUG PANEL ========== -->
+    <!-- Debug panel -->
     <div id="debug-panel" style="position:fixed; bottom:0; left:0; right:0; background:#1a1a2e; color:#0f0; padding:8px; font-size:11px; z-index:99999; max-height:150px; overflow:auto; font-family:monospace; display:none;"></div>
     <script>
         (function() {
@@ -95,15 +101,16 @@
         })();
     </script>
 
-    <!-- Scripts – Ordre critique corrigé -->
+    <!-- Scripts – Ordre critique -->
     <script src="js/utils.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/shop-config.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/cart.js"></script>
-    <script src="js/shop-loader.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/storage.js"></script>   <!-- Nouveau : base locale -->
+    <script src="js/router.js"></script>   <!-- Nouveau : routeur SPA -->
+    <script src="js/pages.js"></script>    <!-- Nouveau : vues -->
+    <script src="js/app.js"></script>      <!-- Modifié : lance le routeur -->
 
     <!-- Service Worker -->
     <script>
