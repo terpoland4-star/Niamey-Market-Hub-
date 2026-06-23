@@ -19,15 +19,50 @@
     <script src="js/app.js"></script>
     
     <script>
-        var files = ['SHOP_CONFIG', 'formatPrice', 'I18n', 'Theme', 'Cart', 'loadShopConfig', 'UI'];
         var html = '';
-        files.forEach(function(f) {
-            if (typeof window[f] !== 'undefined' || typeof eval(f) !== 'undefined') {
-                html += '<p style="color:green;">✅ ' + f + ' OK</p>';
-            } else {
-                html += '<p style="color:red;">❌ ' + f + ' NON TROUVÉ</p>';
-            }
-        });
+        
+        if (typeof SHOP_CONFIG !== 'undefined') {
+            html += '<p style="color:green;">✅ shop-config.js - ' + SHOP_CONFIG.name + '</p>';
+        } else {
+            html += '<p style="color:red;">❌ shop-config.js</p>';
+        }
+        
+        if (typeof formatPrice !== 'undefined') {
+            html += '<p style="color:green;">✅ utils.js</p>';
+        } else {
+            html += '<p style="color:red;">❌ utils.js</p>';
+        }
+        
+        if (typeof I18n !== 'undefined') {
+            html += '<p style="color:green;">✅ i18n.js</p>';
+        } else {
+            html += '<p style="color:red;">❌ i18n.js</p>';
+        }
+        
+        if (typeof Theme !== 'undefined') {
+            html += '<p style="color:green;">✅ theme.js</p>';
+        } else {
+            html += '<p style="color:red;">❌ theme.js</p>';
+        }
+        
+        if (typeof Cart !== 'undefined') {
+            html += '<p style="color:green;">✅ cart.js</p>';
+        } else {
+            html += '<p style="color:red;">❌ cart.js</p>';
+        }
+        
+        if (typeof loadShopConfig !== 'undefined') {
+            html += '<p style="color:green;">✅ shop-loader.js</p>';
+        } else {
+            html += '<p style="color:red;">❌ shop-loader.js</p>';
+        }
+        
+        if (typeof UI !== 'undefined') {
+            html += '<p style="color:green;">✅ ui.js</p>';
+        } else {
+            html += '<p style="color:red;">❌ ui.js</p>';
+        }
+        
         document.getElementById('result').innerHTML = html;
     </script>
 </body>
