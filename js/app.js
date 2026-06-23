@@ -1,6 +1,6 @@
 // ==========================================
 // app.js – Point d'entrée principal
-// Version 3.1 – Corrigée
+// Version 3.2 – UI.init(config) corrigé
 // ==========================================
 
 (function() {
@@ -11,56 +11,61 @@
         const config = loadShopConfig();
         window.SHOP_CONFIG = config;
         document.title = config.name || 'Niamey Market Hub';
-        console.log('✅ Config chargée:', config.name);
+        console.log('✅ Config:', config.name);
 
-        // 2. Initialiser i18n
+        // 2. i18n
         I18n.init();
         var langSelector = document.getElementById('lang-selector');
         if (langSelector) {
             langSelector.value = I18n.lang;
-            langSelector.addEventListener('change', function() {
+            langSelector.onchange = function() {
                 I18n.setLang(this.value);
-                UI.render();
-                UI.renderFooter();
-            });
+                UI.init(config);
+            };
         }
 
-        // 3. Initialiser le thème
+        // 3. Theme
         Theme.init();
-        document.getElementById('theme-btn').addEventListener('click', function() { Theme.toggle(); });
-        document.getElementById('contrast-btn').addEventListener('click', function() { Theme.toggleContrast(); });
-        document.getElementById('font-plus').addEventListener('click', function() { Theme.fontUp(); });
-        document.getElementById('font-minus').addEventListener('click', function() { Theme.fontDown(); });
+        document.getElementById('theme-btn').onclick = function() { Theme.toggle(); };
+        document.getElementById('contrast-btn').onclick = function() { Theme.toggleContrast(); };
+        document.getElementById('font-plus').onclick = function() { Theme.fontUp(); };
+        document.getElementById('font-minus').onclick = function() { Theme.fontDown(); };
 
-        // 4. Initialiser le panier
+        // 4. Panier
         Cart.init();
 
-        // 5. Rendre l'interface
-        UI.init();
+        // 5. UI – AVEC LA CONFIG
+        UI.init(config);
 
         // 6. Bouton panier
-        document.getElementById('cart-btn').addEventListener('click', function() { UI.openCart(); });
+        document.getElementById('cart-btn').onclick = function() { UI.openCart(); };
 
-        // 7. Fermer les modales
-        document.getElementById('modal-close').addEventListener('click', function() { UI.closeModal('product-modal'); });
-        document.getElementById('cart-modal-close').addEventListener('click', function() { UI.closeModal('cart-modal'); });
-        document.getElementById('product-modal').addEventListener('click', function(e) { if (e.target === this) UI.closeModal('product-modal'); });
-        document.getElementById('cart-modal').addEventListener('click', function(e) { if (e.target === this) UI.closeModal('cart-modal'); });
+        // 7. Modales
+        document.getElementById('modal-close').onclick = function() { UI.closeModal('product-modal'); };
+        document.getElementById('cart-modal-close').onclick = function() { UI.closeModal('cart-modal'); };
+        document.getElementById('product-modal').onclick = function(e) { if (e.target === this) UI.closeModal('product-modal'); };
+        document.getElementById('cart-modal').onclick = function(e) { if (e.target === this) UI.closeModal('cart-modal'); };
 
         // 8. Échap
-        document.addEventListener('keydown', function(e) {
+        document.onkeydown = function(e) {
             if (e.key === 'Escape') {
                 UI.closeModal('product-modal');
                 UI.closeModal('cart-modal');
             }
-        });
+        };
 
         console.log('✅ Application prête !');
-        console.log('📦 ' + ((config.products || []).length) + ' produits');
+        console.log('📦 ' + (config.products || []).length + ' produits');
         console.log('🏪 ' + config.name);
 
     } catch (error) {
         console.error('❌ Erreur:', error);
-        document.getElementById('app').innerHTML = '<div style="text-align:center;padding:60px 20px;"><p style="font-size:3rem;">⚠️</p><h2>Erreur</h2><p>' + error.message + '</p><button class="btn btn-primary" onclick="location.reload()" style="margin-top:16px;">🔄 Réessayer</button></div>';
+        document.getElementById('app').innerHTML = 
+            '<div style="text-align:center;padding:60px 20px;">' +
+            '<p style="font-size:3rem;">⚠️</p>' +
+            '<h2>Erreur lors du chargement</h2>' +
+            '<p style="color:var(--text-light);">' + error.message + '</p>' +
+            '<button class="btn btn-primary" onclick="location.reload()" style="margin-top:16px;">🔄 Réessayer</button>' +
+            '</div>';
     }
 })();
