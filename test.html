@@ -3,19 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        .success { color: green; font-size: 24px; }
-    </style>
+    <title>Test Config</title>
 </head>
 <body>
-    <h1>Test Niamey Market Hub</h1>
-    <div id="result"></div>
+    <h1>Test config.js</h1>
+    <div id="result">Chargement...</div>
 
+    <script src="js/config.js"></script>
     <script>
-        document.getElementById('result').innerHTML = '<p class="success">✅ JavaScript fonctionne !</p>';
-        console.log('✅ Test OK');
+        try {
+            if (typeof CONFIG !== 'undefined' && CONFIG.shopName) {
+                document.getElementById('result').innerHTML = 
+                    '<p style="color:green;">✅ config.js OK - ' + CONFIG.shopName + ' - ' + CONFIG.products.length + ' produits</p>';
+            } else {
+                document.getElementById('result').innerHTML = 
+                    '<p style="color:red;">❌ CONFIG non trouvé</p>';
+            }
+        } catch(e) {
+            document.getElementById('result').innerHTML = 
+                '<p style="color:red;">❌ Erreur: ' + e.message + '</p>';
+        }
     </script>
 </body>
 </html>
