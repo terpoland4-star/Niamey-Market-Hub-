@@ -6,15 +6,11 @@
     <meta name="theme-color" content="#E05206">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="Niamey Market Hub – Plateforme de boutiques en ligne">
-    <meta name="author" content="HAM Global Words">
     <meta property="og:title" content="Niamey Market Hub">
     <meta property="og:description" content="Votre marketplace multi-boutiques">
     <meta property="og:type" content="website">
     <link rel="icon" type="image/png" sizes="96x96" href="https://placehold.co/96x96/E05206/white?text=NMH">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="manifest" href="manifest.json">
@@ -28,9 +24,7 @@
         </div>
     </noscript>
 
-    <div class="banner">
-        <div class="banner-text">🚧 Site en construction – Fonctionnalités limitées 🚧</div>
-    </div>
+    <div class="banner"><div class="banner-text">🚧 Site en construction 🚧</div></div>
 
     <header class="toolbar">
         <select id="lang-selector" class="toolbar-select">
@@ -43,16 +37,12 @@
             <button id="font-minus" class="toolbar-btn">A-</button>
             <button id="font-plus" class="toolbar-btn">A+</button>
             <button id="cart-btn" class="toolbar-btn">
-                <i class="fas fa-shopping-cart"></i>
-                <span id="cart-count">0</span>
+                <i class="fas fa-shopping-cart"></i> <span id="cart-count">0</span>
             </button>
         </div>
     </header>
 
-    <main id="app">
-        <div class="loading">Chargement...</div>
-    </main>
-
+    <main id="app"><div class="loading">Chargement...</div></main>
     <footer id="footer"></footer>
 
     <div class="whatsapp-float">
@@ -67,29 +57,59 @@
             <div id="modal-content"></div>
         </div>
     </div>
-
     <div class="modal-overlay" id="cart-modal" style="display:none;">
         <div class="modal">
             <button class="modal-close" id="cart-modal-close">&times;</button>
             <div id="cart-modal-content"></div>
         </div>
     </div>
-
     <div id="toast-container"></div>
 
+    <!-- ========== DEBUG PANEL ========== -->
+    <div id="debug-panel" style="position:fixed; bottom:0; left:0; right:0; background:#1a1a2e; color:#0f0; padding:8px; font-size:11px; z-index:99999; max-height:150px; overflow:auto; font-family:monospace; display:none;"></div>
+    <script>
+        (function() {
+            var debugEl = document.getElementById('debug-panel');
+            function debug(msg, type) {
+                type = type || 'log';
+                var color = type === 'error' ? '#f44' : type === 'warn' ? '#fa0' : '#0f0';
+                var time = new Date().toLocaleTimeString();
+                debugEl.innerHTML += '<div style="color:' + color + '">[' + time + '] ' + msg + '</div>';
+                debugEl.style.display = 'block';
+            }
+            window.debug = debug;
+            window.onerror = function(msg, url, line) {
+                debug('JS ERROR: ' + msg + ' (ligne ' + line + ')', 'error');
+                return false;
+            };
+            window.addEventListener('unhandledrejection', function(e) {
+                debug('PROMISE REJECTED: ' + (e.reason && e.reason.message ? e.reason.message : e.reason), 'error');
+            });
+            // Vérifier après 4 secondes si le loader est encore là
+            setTimeout(function() {
+                var app = document.getElementById('app');
+                if (app && app.innerHTML.indexOf('Chargement') > -1) {
+                    debug('WARN: Loader toujours affiché après 4 secondes', 'warn');
+                }
+            }, 4000);
+            debug('Debug panel ready');
+        })();
+    </script>
+
     <!-- Scripts – Ordre critique -->
-<script src="js/shop-config.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/i18n.js"></script>
-<script src="js/theme.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/shop-loader.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/app.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/shop-config.js"></script>
+    <script src="js/shop-loader.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+
     <!-- Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(function() {});
+            navigator.serviceWorker.register('sw.js').catch(function(){});
         }
     </script>
 </body>
