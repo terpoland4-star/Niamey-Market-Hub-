@@ -6,21 +6,21 @@
 const SHOP_CONFIG = {
     // ---------- IDENTITÉ ----------
     slug: 'boutique-demo',
-    name: 'Ma Boutique Démo',
-    tagline: 'Votre boutique en ligne de confiance',
-    description: 'Découvrez notre sélection de produits de qualité à Niamey.',
+    name: 'Niamey Market Hub',
+    tagline: 'Plateforme de boutiques en ligne',
+    description: 'Découvrez notre marketplace multi-boutiques à Niamey.',
     
     // ---------- MARQUE ----------
-    logo: 'https://placehold.co/200x200/E05206/white?text=Demo',
-    favicon: 'https://placehold.co/96x96/E05206/white?text=Demo',
+    logo: 'shops/boutique-demo/assets/logo.png',
+    favicon: 'shops/boutique-demo/assets/logo.png',
     primaryColor: '#E05206',
     secondaryColor: '#1B6B93',
     
     // ---------- CONTACT ----------
-    whatsapp: '22786762903',
-    whatsappMessage: 'Bonjour, je viens de visiter votre boutique !',
-    email: 'contact@maboutique.com',
-    phone: '+227 00 00 00 00',
+    whatsapp: '+22786762903',
+    whatsappMessage: 'Bonjour Niamey Market Hub !',
+    email: 'hamadineagmoctar@gmail.com',
+    phone: '+227 77 64 18 00',
     address: 'Niamey, Niger',
     googleMaps: '#',
     
@@ -34,7 +34,7 @@ const SHOP_CONFIG = {
     developerTitle: 'Développeur full‑stack & CEO de HAM Global Words',
     developerAddress: 'Tchangarey, Marché de Bétail, Niamey (Niger)',
     developerWhatsapp: '22786762903',
-    developerEmail: 'contact@hamglobalwords.com',
+    developerEmail: 'moctarhamadine54@gmail.com',
     developerLogo: '',
     
     // ---------- CATÉGORIES ----------
