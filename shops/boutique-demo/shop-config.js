@@ -13,26 +13,26 @@ const SHOP_CONFIG = {
     
     // ---------- IDENTITÉ ----------
     slug: 'boutique-demo',
-    name: 'Ma Boutique Démo',
-    tagline: 'Votre boutique en ligne de confiance',
-    description: 'Découvrez notre sélection de produits de qualité à Niamey.',
+    name: 'Niamey Market Hub',
+    tagline: 'Plateforme de boutiques en ligne',
+    description: 'Découvrez notre marketplace multi-boutiques à Niamey.',
     
     // ---------- MARQUE ----------
     logo: 'shops/boutique-demo/assets/logo.png',
-    favicon: 'shops/boutique-demo/assets/favicon.png',
+    favicon: 'shops/boutique-demo/assets/logo.png',
     primaryColor: '#E05206',
     secondaryColor: '#1B6B93',
     
     // ---------- CONTACT ----------
-    whatsapp: '22700000000',
-    whatsappMessage: 'Bonjour, je viens de visiter votre boutique !',
-    email: 'contact@maboutique.com',
-    phone: '+227 00 00 00 00',
-    address: 'Votre adresse complète, Niamey (Niger)',
+    whatsapp: '+22786762903',
+    whatsappMessage: 'Bonjour Niamey Market Hub !',
+    email: 'contact@niameymarkethub.com',
+    phone: '+227 86 76 29 03',
+    address: 'Niamey, Niger',
     googleMaps: 'https://maps.app.goo.gl/...',
     
     // ---------- RÉSEAUX SOCIAUX ----------
-    facebook: 'https://facebook.com/maboutique',
+    facebook: 'https://facebook.com/niameymarkethub',
     instagram: '',
     tiktok: '',
     
@@ -40,7 +40,7 @@ const SHOP_CONFIG = {
     developerName: 'Hamadine AG MOCTAR',
     developerTitle: 'Développeur full‑stack & CEO de HAM Global Words',
     developerAddress: 'Tchangarey, Marché de Bétail, Niamey (Niger)',
-    developerWhatsapp: '22786762903',
+    developerWhatsapp: '+22786762903',
     developerEmail: 'contact@hamglobalwords.com',
     developerLogo: 'assets/images/logo/logoHAM.png',
     
