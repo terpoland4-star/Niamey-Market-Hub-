@@ -1,18 +1,15 @@
 // ==========================================
 // ui.js – Interface utilisateur dynamique
-// Version 2.0 – Sécurisée et sans fuites mémoire
+// Version 2.1 – Corrections logo et I18n.lang
 // ==========================================
 
 const UI = {
     config: null,
-    escHandler: null, // Stocker la référence du handler pour le cleanup
+    escHandler: null,
 
-    /**
-     * Initialise l'interface utilisateur
-     */
     init(config) {
         this.config = config;
-        this.cleanup(); // Nettoyer les anciens listeners
+        this.cleanup();
         this.renderApp();
         this.renderFooter();
         this.updateMetaTags();
@@ -20,9 +17,6 @@ const UI = {
         this.updateBanner();
     },
 
-    /**
-     * Nettoie les event listeners pour éviter les fuites mémoire
-     */
     cleanup() {
         if (this.escHandler) {
             document.removeEventListener('keydown', this.escHandler);
@@ -30,16 +24,12 @@ const UI = {
         }
     },
 
-    // ---------- MÉTADONNÉES DYNAMIQUES ----------
     updateMetaTags() {
         if (!this.config) return;
-        
         const config = this.config;
-        
-        // Titre
+
         document.title = escapeHtml(config.name || 'Niamey Market Hub');
-        
-        // Favicon
+
         let favicon = document.querySelector('link[rel="icon"]');
         if (!favicon) {
             favicon = document.createElement('link');
@@ -47,14 +37,10 @@ const UI = {
             document.head.appendChild(favicon);
         }
         favicon.href = config.favicon || 'assets/favicon-96x96.png';
-        
-        // Theme color
+
         const themeMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeMeta) {
-            themeMeta.content = config.primaryColor || '#E05206';
-        }
-        
-        // Description
+        if (themeMeta) themeMeta.content = config.primaryColor || '#E05206';
+
         let metaDesc = document.querySelector('meta[name="description"]');
         if (!metaDesc) {
             metaDesc = document.createElement('meta');
@@ -62,18 +48,16 @@ const UI = {
             document.head.appendChild(metaDesc);
         }
         metaDesc.content = escapeHtml(config.description || '');
-        
-        // Open Graph
+
         this.setMetaProperty('og:title', config.name);
         this.setMetaProperty('og:description', config.description);
         this.setMetaProperty('og:image', config.logo);
         this.setMetaProperty('og:type', 'website');
-        this.setMetaProperty('og:locale', I18n.currentLang || 'fr');
+        this.setMetaProperty('og:locale', I18n.lang || 'fr');   // ✅ corrigé
     },
 
     setMetaProperty(property, content) {
         if (!content) return;
-        
         let meta = document.querySelector(`meta[property="${property}"]`);
         if (!meta) {
             meta = document.createElement('meta');
@@ -83,15 +67,13 @@ const UI = {
         meta.content = escapeHtml(String(content));
     },
 
-    // ---------- APPLICATION PRINCIPALE ----------
     renderApp() {
         const app = document.getElementById('app');
         if (!app || !this.config) return;
 
         const config = this.config;
-        
+
         app.innerHTML = `
-            <!-- En-tête de la boutique -->
             <header class="shop-header fade-in">
                 <img src="${escapeHtml(config.logo || '')}" 
                      alt="${escapeHtml(config.name)}" 
@@ -102,7 +84,6 @@ const UI = {
                 <p class="shop-header__tagline">${escapeHtml(config.tagline || '')}</p>
             </header>
 
-            <!-- Barre de filtres -->
             <div class="filters-bar fade-in">
                 <div class="filters-bar__left">
                     <select id="category-filter" class="toolbar-select" aria-label="${I18n.t('filter_by_category')}">
@@ -123,12 +104,10 @@ const UI = {
                 </div>
             </div>
 
-            <!-- Grille produits -->
             <div id="products-grid" class="products-grid fade-in">
                 ${this.renderProducts(config.products || [])}
             </div>
 
-            <!-- Modal produit -->
             <div id="product-modal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modal-title">
                 <div class="modal">
                     <button class="modal__close" id="modal-close-btn" aria-label="${I18n.t('close')}">
@@ -139,53 +118,37 @@ const UI = {
             </div>
         `;
 
-        // Ajouter les event listeners APRÈS le rendu
         this.attachEventListeners();
-        
-        // Gérer l'erreur de chargement du logo
+
         const logoImg = document.getElementById('shop-logo-img');
         if (logoImg) {
             logoImg.addEventListener('error', function() {
-                this.src = `https://placehold.co/200x200?text=${encodeURIComponent(config.name.charAt(0) || 'N')}`;
+                // ✅ fallback sécurisé
+                var fallbackChar = (config && config.name) ? config.name.charAt(0) : 'N';
+                this.src = 'https://placehold.co/200x200?text=' + encodeURIComponent(fallbackChar);
             });
         }
-        
-        // Compteur produits
+
         this.updateProductsCount((config.products || []).length);
     },
 
-    /**
-     * Attache les event listeners après le rendu (évite XSS dans onerror)
-     */
     attachEventListeners() {
-        // Filtres
         const categoryFilter = document.getElementById('category-filter');
         const sortFilter = document.getElementById('sort-filter');
-        
-        if (categoryFilter) {
-            categoryFilter.addEventListener('change', () => this.filterProducts());
-        }
-        if (sortFilter) {
-            sortFilter.addEventListener('change', () => this.filterProducts());
-        }
-        
-        // Modal close button
+
+        if (categoryFilter) categoryFilter.addEventListener('change', () => this.filterProducts());
+        if (sortFilter) sortFilter.addEventListener('change', () => this.filterProducts());
+
         const closeBtn = document.getElementById('modal-close-btn');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closeModal());
-        }
-        
-        // Modal overlay click
+        if (closeBtn) closeBtn.addEventListener('click', () => this.closeModal());
+
         const modal = document.getElementById('product-modal');
         if (modal) {
             modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    this.closeModal();
-                }
+                if (e.target === modal) this.closeModal();
             });
         }
-        
-        // Product cards click (délégation d'événement)
+
         const productsGrid = document.getElementById('products-grid');
         if (productsGrid) {
             productsGrid.addEventListener('click', (e) => {
@@ -197,15 +160,12 @@ const UI = {
         }
     },
 
-    // ---------- RENDU DES PRODUITS ----------
     renderProducts(products) {
         if (!products || products.length === 0) {
-            return `
-                <div class="error-state">
-                    <i class="fas fa-box-open" style="font-size: 3rem; opacity: 0.3;" aria-hidden="true"></i>
-                    <p>${I18n.t('no_results')}</p>
-                </div>
-            `;
+            return `<div class="error-state">
+                <i class="fas fa-box-open" style="font-size: 3rem; opacity: 0.3;" aria-hidden="true"></i>
+                <p>${I18n.t('no_results')}</p>
+            </div>`;
         }
 
         return products.map(product => {
@@ -217,7 +177,7 @@ const UI = {
             const stars = renderStars(product.rating || 0);
             const thumbnail = escapeHtml(product.thumbnail || '');
             const fallbackUrl = `https://placehold.co/600x400?text=${encodeURIComponent(product.name || 'Produit')}`;
-            
+
             return `
                 <article class="product-card fade-in" data-product-id="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="${productName} - ${price}">
                     <div style="position: relative;">
@@ -253,34 +213,28 @@ const UI = {
         }).join('');
     },
 
-    // ---------- GESTION DES IMAGES (AJOUTÉ - remplace onerror inline) ----------
     setupImageFallbacks() {
         const images = document.querySelectorAll('img[data-fallback]');
         images.forEach(img => {
             img.addEventListener('error', function() {
                 if (this.dataset.fallback) {
                     this.src = this.dataset.fallback;
-                    this.removeAttribute('data-fallback'); // Éviter boucle infinie
+                    this.removeAttribute('data-fallback');
                 }
             });
         });
     },
 
-    // ---------- FILTRAGE ----------
     filterProducts() {
         if (!this.config) return;
-        
         const categoryFilter = document.getElementById('category-filter')?.value || 'all';
         const sortFilter = document.getElementById('sort-filter')?.value || 'default';
-        
         let products = [...(this.config.products || [])];
-        
-        // Filtre catégorie
+
         if (categoryFilter !== 'all') {
             products = products.filter(p => p.category === categoryFilter);
         }
-        
-        // Tri
+
         switch (sortFilter) {
             case 'price-asc':
                 products.sort((a, b) => (a.price || 0) - (b.price || 0));
@@ -292,14 +246,12 @@ const UI = {
                 products.sort((a, b) => (b.rating || 0) - (a.rating || 0));
                 break;
         }
-        
-        // Mise à jour de l'affichage
+
         const grid = document.getElementById('products-grid');
         if (grid) {
             grid.innerHTML = this.renderProducts(products);
-            this.setupImageFallbacks(); // Réattacher les fallbacks
+            this.setupImageFallbacks();
         }
-        
         this.updateProductsCount(products.length);
     },
 
@@ -310,16 +262,13 @@ const UI = {
         }
     },
 
-    // ---------- MODAL PRODUIT ----------
     openProductModal(productId) {
         if (!this.config) return;
-        
         const product = (this.config.products || []).find(p => p.id === productId);
         if (!product) return;
 
         const modal = document.getElementById('product-modal');
         const content = document.getElementById('modal-content');
-        
         if (!modal || !content) return;
 
         const productName = escapeHtml(product.name || 'Produit');
@@ -330,7 +279,7 @@ const UI = {
         const thumbnail = escapeHtml(product.thumbnail || '');
         const fallbackUrl = `https://placehold.co/600x400?text=${encodeURIComponent(product.name || 'Produit')}`;
         const description = escapeHtml(product.description || '');
-        
+
         const whatsappMessage = encodeURIComponent(
             `${I18n.t('order_message')}\n\n*${product.name}*\n${I18n.t('price')} : ${formatPrice(product.price)}\n\n${this.config.whatsappMessage || ''}`
         );
@@ -379,8 +328,7 @@ const UI = {
 
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
-        
-        // Setup image fallback
+
         const modalImg = document.getElementById('modal-product-img');
         if (modalImg) {
             modalImg.addEventListener('error', function() {
@@ -390,20 +338,14 @@ const UI = {
                 }
             });
         }
-        
-        // Gestionnaire Escape (avec cleanup)
+
         this.escHandler = (e) => {
-            if (e.key === 'Escape') {
-                this.closeModal();
-            }
+            if (e.key === 'Escape') this.closeModal();
         };
         document.addEventListener('keydown', this.escHandler);
-        
-        // Focus sur le bouton fermer
+
         const closeBtn = document.getElementById('modal-close-btn');
-        if (closeBtn) {
-            setTimeout(() => closeBtn.focus(), 100);
-        }
+        if (closeBtn) setTimeout(() => closeBtn.focus(), 100);
     },
 
     closeModal() {
@@ -412,40 +354,25 @@ const UI = {
             modal.style.display = 'none';
             document.body.style.overflow = '';
         }
-        
-        // CLEANUP: Retirer le listener Escape
         if (this.escHandler) {
             document.removeEventListener('keydown', this.escHandler);
             this.escHandler = null;
         }
-        
-        // Vider le contenu de la modale après fermeture
         const content = document.getElementById('modal-content');
         if (content) {
-            // Petit délai pour l'animation
-            setTimeout(() => {
-                content.innerHTML = '';
-            }, 300);
+            setTimeout(() => { content.innerHTML = ''; }, 300);
         }
     },
 
-    // ---------- FOOTER ----------
     renderFooter() {
         const footer = document.getElementById('footer');
         if (!footer || !this.config) return;
 
         const config = this.config;
         const socialLinks = [];
-        
-        if (config.facebook) {
-            socialLinks.push(`<a href="${escapeHtml(config.facebook)}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a>`);
-        }
-        if (config.instagram) {
-            socialLinks.push(`<a href="${escapeHtml(config.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram fa-lg" aria-hidden="true"></i></a>`);
-        }
-        if (config.tiktok) {
-            socialLinks.push(`<a href="${escapeHtml(config.tiktok)}" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok fa-lg" aria-hidden="true"></i></a>`);
-        }
+        if (config.facebook) socialLinks.push(`<a href="${escapeHtml(config.facebook)}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a>`);
+        if (config.instagram) socialLinks.push(`<a href="${escapeHtml(config.instagram)}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram fa-lg" aria-hidden="true"></i></a>`);
+        if (config.tiktok) socialLinks.push(`<a href="${escapeHtml(config.tiktok)}" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok fa-lg" aria-hidden="true"></i></a>`);
 
         footer.innerHTML = `
             <footer class="shop-footer fade-in">
@@ -455,13 +382,11 @@ const UI = {
                     ${config.phone ? `<p style="color: var(--text-secondary);"><i class="fas fa-phone" aria-hidden="true"></i> ${escapeHtml(config.phone)}</p>` : ''}
                     ${config.email ? `<p style="color: var(--text-secondary);"><i class="fas fa-envelope" aria-hidden="true"></i> ${escapeHtml(config.email)}</p>` : ''}
                 </div>
-                
                 ${socialLinks.length ? `
                     <div style="margin-bottom: 20px; display: flex; gap: 15px; justify-content: center;">
                         ${socialLinks.join('')}
                     </div>
                 ` : ''}
-                
                 <div class="shop-footer__dev">
                     <p>${I18n.t('developed_by')} 
                         <strong>${escapeHtml(config.developerName || 'HAM Global Words')}</strong> – ${escapeHtml(config.developerTitle || '')}
@@ -479,28 +404,21 @@ const UI = {
         `;
     },
 
-    // ---------- WHATSAPP ----------
     updateWhatsApp() {
         if (!this.config) return;
-        
         const link = document.getElementById('whatsappLink');
         const bubble = document.getElementById('whatsappBubble');
-        
         if (link) {
             const message = encodeURIComponent(this.config.whatsappMessage || 'Bonjour');
             link.href = `https://wa.me/${this.config.whatsapp}?text=${message}`;
         }
-        
         if (bubble) {
             bubble.textContent = `💬 ${escapeHtml(this.config.name || 'Contact')}`;
         }
     },
 
-    // ---------- BANNIÈRE ----------
     updateBanner() {
         const banner = document.getElementById('banner-text');
-        if (banner) {
-            banner.textContent = I18n.t('banner_text');
-        }
+        if (banner) banner.textContent = I18n.t('banner_text');
     }
 };
