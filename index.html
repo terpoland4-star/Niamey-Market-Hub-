@@ -85,7 +85,6 @@
             window.addEventListener('unhandledrejection', function(e) {
                 debug('PROMISE REJECTED: ' + (e.reason && e.reason.message ? e.reason.message : e.reason), 'error');
             });
-            // Vérifier après 4 secondes si le loader est encore là
             setTimeout(function() {
                 var app = document.getElementById('app');
                 if (app && app.innerHTML.indexOf('Chargement') > -1) {
@@ -96,12 +95,12 @@
         })();
     </script>
 
-    <!-- Scripts – Ordre critique -->
+    <!-- Scripts – Ordre critique corrigé -->
     <script src="js/utils.js"></script>
     <script src="js/i18n.js"></script>
+    <script src="js/shop-config.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/cart.js"></script>
-    <script src="js/shop-config.js"></script>
     <script src="js/shop-loader.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
