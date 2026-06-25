@@ -339,3 +339,65 @@ input:focus, select:focus, textarea:focus {
     .toolbar { flex-wrap: wrap; justify-content: center; }
     .product-grid { grid-template-columns: 1fr 1fr; }
 }
+/* ---------- MENU "PLUS" ---------- */
+.menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1200;
+}
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px;
+    max-width: 80vw;
+    height: 100%;
+    background: var(--surface);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 1300;
+    padding: 20px;
+    overflow-y: auto;
+}
+.side-menu.open {
+    transform: translateX(0);
+}
+.side-menu .menu-section {
+    margin-bottom: 24px;
+}
+.side-menu label {
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    display: block;
+}
+.menu-link, .menu-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.95rem;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+}
+.menu-link:hover, .menu-btn:hover {
+    background: var(--bg);
+}
+.font-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.font-controls span {
+    font-size: 0.9rem;
+    color: var(--text-light);
+   }
