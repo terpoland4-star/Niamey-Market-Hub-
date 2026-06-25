@@ -16,18 +16,55 @@
     <link rel="manifest" href="manifest.json">
     <title>Niamey Market Hub</title>
     <style>
-        /* Styles additionnels pour les pages login/register/dashboard */
-        .page { padding: 20px; max-width: 600px; margin: 0 auto; }
-        .page h2 { margin-bottom: 20px; }
-        .page form { display: flex; flex-direction: column; gap: 12px; }
-        .page input, .page select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); }
-        .page button { margin-top: 8px; }
-        .my-products { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
-        .my-product-item { display: flex; align-items: center; gap: 12px; background: var(--surface); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-        .my-product-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
-        .my-product-item .info { flex: 1; }
-        .my-product-item .actions { display: flex; gap: 6px; }
-        .btn-danger { background: #dc3545; color: white; }
+        /* Barre de navigation inférieure */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 60px;
+            z-index: 1100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.7rem;
+            transition: color 0.2s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: var(--font-body);
+        }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
+        .nav-item.active { color: var(--primary); }
+        .badge {
+            position: absolute;
+            top: 2px;
+            right: 50%;
+            transform: translateX(18px);
+            background: var(--primary);
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            line-height: 1;
+        }
+        /* Ajustement du contenu principal pour ne pas être caché derrière la barre du bas */
+        main { padding-bottom: 80px; }
+        .whatsapp-float { bottom: 80px; }
     </style>
 </head>
 <body>
@@ -38,30 +75,42 @@
         </div>
     </noscript>
 
-    <div class="banner"><div class="banner-text">🚧 Site en construction 🚧</div></div>
+    <!-- Barre de navigation inférieure -->
+    <nav class="bottom-nav">
+        <a href="#home" class="nav-item active" id="nav-home"><i class="fas fa-home"></i><span>Accueil</span></a>
+        <a href="#orders" class="nav-item" id="nav-orders" style="display:none;"><i class="fas fa-receipt"></i><span>Commandes</span></a>
+        <button class="nav-item" id="nav-add" style="display:none;" onclick="Router.navigate('add-product')"><i class="fas fa-plus-circle"></i><span>Vendre</span></button>
+        <button class="nav-item" id="nav-cart" onclick="UI.openCart()"><i class="fas fa-shopping-cart"></i><span>Panier</span><span id="cart-count" class="badge" style="display:none;">0</span></button>
+        <button class="nav-item" id="nav-menu" onclick="toggleMenu()"><i class="fas fa-ellipsis-h"></i><span>Plus</span></button>
+    </nav>
 
-    <header class="toolbar">
-        <select id="lang-selector" class="toolbar-select">
-            <option value="fr">🇫🇷 FR</option>
-            <option value="en">🇬🇧 EN</option>
-        </select>
-        <nav style="display:flex; gap:10px; margin-left:auto;">
-            <a href="#home" class="toolbar-btn">Accueil</a>
-            <a href="#login" class="toolbar-btn" id="login-link">Connexion</a>
-            <a href="#register" class="toolbar-btn" id="register-link">Inscription</a>
-            <a href="#dashboard" class="toolbar-btn" id="dashboard-link" style="display:none;">Dashboard</a>
-            <a href="#orders" class="toolbar-btn" id="orders-link" style="display:none;">Commandes</a>
-        </nav>
-        <div style="display:flex;gap:6px;">
-            <button id="theme-btn" class="toolbar-btn"><i class="fas fa-moon"></i></button>
-            <button id="contrast-btn" class="toolbar-btn"><i class="fas fa-adjust"></i></button>
-            <button id="font-minus" class="toolbar-btn">A-</button>
-            <button id="font-plus" class="toolbar-btn">A+</button>
-            <button id="cart-btn" class="toolbar-btn">
-                <i class="fas fa-shopping-cart"></i> <span id="cart-count">0</span>
-            </button>
+    <!-- Menu "Plus" coulissant -->
+    <div class="menu-overlay" id="menu-overlay" style="display:none;" onclick="toggleMenu()"></div>
+    <div class="side-menu" id="side-menu">
+        <div class="menu-section">
+            <label>Langue</label>
+            <select id="lang-selector" class="toolbar-select">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 English</option>
+            </select>
         </div>
-    </header>
+        <div class="menu-section">
+            <label>Navigation</label>
+            <a href="#login" class="menu-link" id="login-link">Connexion</a>
+            <a href="#register" class="menu-link" id="register-link">Inscription</a>
+            <a href="#dashboard" class="menu-link" id="dashboard-link" style="display:none;">Dashboard</a>
+        </div>
+        <div class="menu-section">
+            <label>Accessibilité</label>
+            <button id="theme-btn" class="menu-btn"><i class="fas fa-moon"></i> Mode sombre</button>
+            <button id="contrast-btn" class="menu-btn"><i class="fas fa-adjust"></i> Contraste</button>
+            <div class="font-controls">
+                <button id="font-minus" class="menu-btn">A-</button>
+                <span>Taille</span>
+                <button id="font-plus" class="menu-btn">A+</button>
+            </div>
+        </div>
+    </div>
 
     <main id="app"><div class="loading">Chargement...</div></main>
     <footer id="footer"></footer>
@@ -72,8 +121,8 @@
         </a>
     </div>
 
-    <!-- Debug panel -->
-    <div id="debug-panel" style="position:fixed; bottom:0; left:0; right:0; background:#1a1a2e; color:#0f0; padding:8px; font-size:11px; z-index:99999; max-height:150px; overflow:auto; font-family:monospace; display:none;"></div>
+    <!-- Debug panel (caché) -->
+    <div id="debug-panel" style="position:fixed; bottom:70px; left:0; right:0; background:#1a1a2e; color:#0f0; padding:8px; font-size:11px; z-index:99999; max-height:150px; overflow:auto; font-family:monospace; display:none;"></div>
     <script>
         (function() {
             var debugEl = document.getElementById('debug-panel');
@@ -92,31 +141,33 @@
             window.addEventListener('unhandledrejection', function(e) {
                 debug('PROMISE REJECTED: ' + (e.reason && e.reason.message ? e.reason.message : e.reason), 'error');
             });
-            setTimeout(function() {
-                var app = document.getElementById('app');
-                if (app && app.innerHTML.indexOf('Chargement') > -1) {
-                    debug('WARN: Loader toujours affiché après 4 secondes', 'warn');
-                }
-            }, 4000);
-            debug('Debug panel ready');
         })();
     </script>
 
-    <!-- Scripts – Ordre critique -->
+    <!-- Scripts -->
     <script src="js/utils.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/shop-config.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/cart.js"></script>
-    <script src="js/storage.js"></script>   <!-- Nouveau : base locale -->
-    <script src="js/router.js"></script>   <!-- Nouveau : routeur SPA -->
-    <script src="js/pages.js"></script>    <!-- Nouveau : vues -->
-    <script src="js/app.js"></script>      <!-- Modifié : lance le routeur -->
+    <script src="js/storage.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/pages.js"></script>
+    <script src="js/app.js"></script>
 
     <!-- Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(function(){});
+        }
+    </script>
+
+    <!-- Gestion du menu "Plus" -->
+    <script>
+        function toggleMenu() {
+            document.getElementById('side-menu').classList.toggle('open');
+            document.getElementById('menu-overlay').style.display = 
+                document.getElementById('side-menu').classList.contains('open') ? 'block' : 'none';
         }
     </script>
 </body>
