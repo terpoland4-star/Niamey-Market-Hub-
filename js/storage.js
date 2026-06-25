@@ -1,5 +1,4 @@
-// storage.js – Base de données locale (localStorage)
-
+// storage.js – Base de données locale
 const DB = {
   // --- Utilisateurs ---
   getUsers() {
@@ -16,7 +15,7 @@ const DB = {
     const newUser = {
       id: Date.now().toString(36),
       email,
-      password: btoa(password), // encodage simple (pas sécurisé, mais suffisant pour démo)
+      password: btoa(password),
       role,
       createdAt: new Date().toISOString()
     };
@@ -26,13 +25,9 @@ const DB = {
   },
   authenticate(email, password) {
     const user = this.findUserByEmail(email);
-    if (user && user.password === btoa(password)) {
-      return user;
-    }
+    if (user && user.password === btoa(password)) return user;
     return null;
   },
-
-  // --- Session ---
   getSession() {
     return JSON.parse(localStorage.getItem('nmh_session') || 'null');
   },
@@ -74,8 +69,40 @@ const DB = {
   getProductsBySeller(sellerId) {
     return this.getProducts().filter(p => p.sellerId === sellerId);
   },
+  getProductById(id) {
+    return this.getProducts().find(p => p.id === id) || null;
+  },
 
-  // --- Panier (déjà existant, on garde la compatibilité) ---
+  // --- Commandes ---
+  getOrders() {
+    return JSON.parse(localStorage.getItem('nmh_orders') || '[]');
+  },
+  saveOrders(orders) {
+    localStorage.setItem('nmh_orders', JSON.stringify(orders));
+  },
+  addOrder(order) {
+    const orders = this.getOrders();
+    order.id = Date.now().toString(36);
+    order.createdAt = new Date().toISOString();
+    orders.push(order);
+    this.saveOrders(orders);
+    return order;
+  },
+  getOrdersByUser(userId, role) {
+    const orders = this.getOrders();
+    if (role === 'seller') return orders.filter(o => o.sellerId === userId);
+    else return orders.filter(o => o.buyerId === userId);
+  },
+  updateOrderStatus(orderId, status) {
+    const orders = this.getOrders();
+    const order = orders.find(o => o.id === orderId);
+    if (order) {
+      order.status = status;
+      this.saveOrders(orders);
+    }
+  },
+
+  // --- Panier ---
   getCart() {
     return JSON.parse(localStorage.getItem('nmh_cart') || '[]');
   },
