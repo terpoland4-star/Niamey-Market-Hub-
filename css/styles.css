@@ -58,7 +58,8 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     transition: background var(--transition), color var(--transition);
-    padding-top: 72px;
+    padding-top: 0;           /* supprimé car plus de toolbar fixe en haut */
+    padding-bottom: 70px;     /* pour la barre de navigation inférieure */
     background-image: var(--wax-pattern);
 }
 
@@ -85,61 +86,6 @@ body {
 }
 @keyframes scroll { to { transform: translateX(-100%); } }
 
-/* ---------- TOOLBAR ---------- */
-.toolbar {
-    position: fixed;
-    top: 32px;
-    left: 0;
-    right: 0;
-    z-index: 999;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background: var(--surface);
-    border-bottom: 2px solid var(--border);
-    box-shadow: var(--shadow);
-    flex-wrap: wrap;
-    gap: 10px;
-}
-.toolbar a {
-    text-decoration: none;
-}
-.toolbar-btn {
-    padding: 10px 16px;
-    border-radius: 30px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    font-weight: 500;
-    cursor: pointer;
-    font-size: 14px;
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font-body);
-}
-.toolbar-btn:hover {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-/* ---------- PAGE ---------- */
-.page {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 32px 20px;
-    animation: fadeInUp 0.45s ease;
-}
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 /* ---------- HERO ---------- */
 .hero {
     background: linear-gradient(135deg, var(--secondary), var(--primary-dark));
@@ -156,6 +102,20 @@ body {
     position: absolute;
     inset: 0;
     background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 10 L50 30 L30 50 L10 30 Z' fill='none' stroke='%23ffffff' stroke-width='0.6' opacity='0.15'/%3E%3C/svg%3E");
+}
+.hero-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 16px;
+    animation: logoFloat 3s ease-in-out infinite;
+    border: 3px solid rgba(255,255,255,0.3);
+    background: #fff;
+}
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
 }
 .hero h1 {
     font-family: var(--font-heading);
@@ -333,18 +293,13 @@ input:focus, select:focus, textarea:focus {
     object-fit: cover;
 }
 
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 600px) {
-    .hero h1 { font-size: 2rem; }
-    .toolbar { flex-wrap: wrap; justify-content: center; }
-    .product-grid { grid-template-columns: 1fr 1fr; }
-}
-/* ---------- MENU "PLUS" ---------- */
+/* ---------- MENU "PLUS" (coulissant) ---------- */
 .menu-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.5);
     z-index: 1200;
+    display: none;
 }
 .side-menu {
     position: fixed;
@@ -400,4 +355,10 @@ input:focus, select:focus, textarea:focus {
 .font-controls span {
     font-size: 0.9rem;
     color: var(--text-light);
-   }
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 600px) {
+    .hero h1 { font-size: 2rem; }
+    .product-grid { grid-template-columns: 1fr 1fr; }
+}
