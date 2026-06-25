@@ -45,6 +45,7 @@
             background: none;
             border: none;
             font-family: var(--font-body);
+            position: relative;
         }
         .nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
         .nav-item.active { color: var(--primary); }
@@ -85,7 +86,7 @@
     </nav>
 
     <!-- Menu "Plus" coulissant -->
-    <div class="menu-overlay" id="menu-overlay" style="display:none;" onclick="toggleMenu()"></div>
+    <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
     <div class="side-menu" id="side-menu">
         <div class="menu-section">
             <label>Langue</label>
